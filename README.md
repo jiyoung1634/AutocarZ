@@ -151,7 +151,7 @@ DEFAULT_TIMEOUT: 네트워크 요청이나 기능의 기본 대기 시간을 지
 
 
 ### **📊 데이터 분석 및 처리**
-- 라이브러리 : ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white) ![NumPy](https://img.shields.io/badge/Numpy-013243?style=flat&logo=numpy&logoColor=white) , openCV
+- 라이브러리 : ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white) ![NumPy](https://img.shields.io/badge/Numpy-013243?style=flat&logo=numpy&logoColor=white) ![OpenCV](https://img.shields.io/badge/opencv-%23white.svg?style=flat&logo=opencv&logoColor=white)
 
 ### **📈 시각화 도구**
 -  ![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C?style=flat&logo=matplotlib&logoColor=white) ![Seaborn](https://img.shields.io/badge/Seaborn-1E3C72?style=flat) ![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white) 
@@ -163,8 +163,8 @@ DEFAULT_TIMEOUT: 네트워크 요청이나 기능의 기본 대기 시간을 지
 
 ### 🗃️ 인프라 & 배포 & 서버
 - 클라우드 : ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazon-aws&logoColor=white) ![EC2](https://img.shields.io/badge/EC2-FF9900?style=flat&logo=amazon-ec2&logoColor=white)
-- 데이터베이스 : ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white) ->그냥 mySQL
-- 서버 : fastapi
+- 데이터베이스 : <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white" />
+- 서버 : ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)
 
 ## 4. 예상 문제 및 해결 방안
 
