@@ -1,24 +1,34 @@
-# AutocarZ 프로젝트 종합 가이드 (25.07.19 기준)
+# AutocarZ 프로젝트 종합 가이드 (25.07.21 기준)
 
 ---
 
 ## 📋 프로젝트 개요
 
-YOLO 객체 탐지를 활용한 라즈베리파이 기반 자율주행 시스템
+**고라니 전용 YOLO 모델**을 활용한 라즈베리파이 기반 실시간 객체 탐지 시스템
 
 ### 🎯 프로젝트 목적
 
-- **실시간 객체 인식**: 카메라로 위험 이상객체(고라니 등) 감지
+- **실시간 객체 인식**: 카메라로 고라니 등 위험 동물 감지
 - **웹 UI 제공**: 브라우저에서 실시간 영상/상태 확인
 - **안전 시스템**: 위험 상황을 빠르게 알림
+- **플랫폼 최적화**: 라즈베리파이와 노트북 환경 자동 최적화
 
 ### 🔧 주요 기술
 
 - **Python**: 전체 프로그램 언어
 - **Flask**: 웹서버 (브라우저에서 실시간 영상 제공)
-- **YOLOv8**: AI 객체 인식 (딥러닝)
-- **OpenCV**: 이미지/영상 처리 (얼굴 탐지 등)
+- **YOLOv8**: AI 객체 인식 (고라니 전용 모델)
+- **OpenCV**: 이미지/영상 처리 (얼굴 탐지 + YOLO 보조)
 - **라즈베리파이/USB 웹캠**: 실제 하드웨어
+
+### 🆕 최신 기능 (25.07.21)
+
+- **🦌 고라니 전용 YOLO 모델**: AIHUB 데이터셋 기반 고라니 특화 인식
+- **🔄 플랫폼별 자동 최적화**: 라즈베리파이(성능 모드) vs 노트북(고품질 모드)
+- **🎯 이중 검출 시스템**: YOLO(파란색) + OpenCV(빨간색) 동시 검출
+- **⏱️ 검출 결과 유지**: 검출된 객체 박스 3-5초간 화면에 유지
+- **🇰🇷 한글 라벨 지원**: "고라니" 등 한글 클래스명 표시
+- **🐛 디버그 로깅**: 검출된 클래스 ID, 개수, 신뢰도 실시간 출력
 
 ---
 
@@ -84,9 +94,18 @@ pip install -r requirements.txt
 mkdir -p models  # models 폴더가 없다면 생성
 # [중요] best.pt 파일을 models/ 폴더에 넣어주세요. (별도 다운로드 또는 SCP로 전송)
 
-# 5. YOLO 클래스 정보 파일 추가
-# 훈련 폴더에서 data.yaml 파일을 models/ 폴더로 복사
-cp /path/to/training/data.yaml models/data.yaml
+# [중요] 고라니 전용 YOLO 모델 준비
+# 방법 1: AIHUB 데이터셋으로 훈련된 모델 사용
+# models/best.pt (고라니 전용 모델)
+# models/data.yaml (클래스 정보: ['고라니'])
+
+# 방법 2: 기존 COCO 모델 사용 (다른 동물도 인식 가능)
+# wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt -O models/best.pt
+
+# 5. YOLO 클래스 정보 파일 확인
+# models/data.yaml 파일이 있는지 확인
+cat models/data.yaml
+# 예상 출력: names: ['고라니']
 
 # 6. OpenCV 얼굴 탐지 모델 추가
 mkdir -p models/haarcascades
@@ -105,6 +124,51 @@ python3 main.py
 
 - 브라우저에서 접속: `http://[라즈베리파이_IP]:5000/`
 - IP 확인: `hostname -I`
+
+---
+
+## 🔄 모델 교체 가이드
+
+### 🎯 새로운 YOLO 모델 적용하기
+
+```bash
+# 1. 기존 모델 백업
+cp models/best.pt models/best_backup_$(date +%Y%m%d).pt
+
+# 2. 새 모델로 교체
+cp /path/to/new_model.pt models/best.pt
+
+# 3. 새 모델의 클래스 정보 교체
+cp /path/to/new_data.yaml models/data.yaml
+
+# 4. 모델 정보 확인
+python -c "from ultralytics import YOLO; model = YOLO('models/best.pt'); print('클래스:', model.names)"
+
+# 5. 시스템 재시작
+python src/main.py
+```
+
+### 📊 모델별 특징
+
+| 모델 타입 | 클래스 수 | 용도 | 정확도 |
+|-----------|-----------|------|--------|
+| **고라니 전용** | 1개 | 고라니 특화 인식 | 높음 |
+| **COCO 일반** | 80개 | 다양한 객체 인식 | 보통 |
+| **멀티 클래스** | 2-10개 | 특정 동물들 | 높음 |
+
+### 🔧 플랫폼별 최적화 설정
+
+```python
+# 라즈베리파이 환경 (자동 감지)
+- 해상도: 640x480
+- FPS: 15
+- 검출 간격: 3프레임마다
+
+# 노트북/PC 환경 (자동 감지)  
+- 해상도: 1280x720
+- FPS: 30
+- 검출 간격: 매 프레임
+```
 
 ---
 
@@ -467,17 +531,32 @@ while True:
 
 - **Q. 어떤 파일을 실행해야 하나요?**
   - A. `src/main.py`만 실행하면 전체 서비스가 동작합니다.
+
 - **Q. 웹캠으로도 되나요?**
-  - A. 네, USB 웹캠도 지원합니다. (`/home/pi/autocarz/src/camera/camera_manager.py`에서 VideoCapture(0) 코드로 구현)
+  - A. 네, USB 웹캠도 지원합니다. 라즈베리파이와 노트북 모두에서 자동으로 최적화됩니다.
+
+- **Q. 고라니가 다른 동물로 잘못 인식돼요!**
+  - A. 고라니 전용 모델(`models/best.pt`)을 사용하고 있는지 확인하세요. COCO 모델은 고라니를 인식하지 못합니다.
+
+- **Q. 모델을 바꾸고 싶어요!**
+  - A. `models/best.pt`와 `models/data.yaml`만 교체하면 됩니다. 코드 수정 불필요!
+
+- **Q. 검출 결과가 너무 빨리 사라져요!**
+  - A. 검출된 객체 박스는 3-5초간 유지됩니다. 더 오래 유지하려면 `camera_manager.py`의 `result_keep_time` 값을 조정하세요.
+
+- **Q. 라즈베리파이에서 성능이 느려요!**
+  - A. 자동으로 성능 최적화 모드(640x480, 15fps)로 설정됩니다. 더 빠르게 하려면 해상도를 낮추세요.
+
 - **Q. CSS가 적용 안 돼요!**
   - A. 반드시 Flask 서버(5000포트)로 접속해야 합니다. HTML에서 Live Server로는 안 됩니다.
+
 - **Q. 기능별 코드는 어디에 있나요?**
   - A.
-    - camera_manager.py(카메라)
-    - yolo_detector.py
-    - opencv_detector.py(AI)
-    - settings_manager.py(설정)
-    - routes/폴더(웹 라우트) 등으로 분리되어 있습니다.
+    - `camera_manager.py` (카메라 + YOLO/OpenCV 통합)
+    - `yolo_detector.py` (YOLO 객체 인식)
+    - `opencv_detector.py` (OpenCV 보조 인식)
+    - `main.py` (Flask 웹서버)
+    - `routes/` 폴더 (웹 API)
 
 ---
 
